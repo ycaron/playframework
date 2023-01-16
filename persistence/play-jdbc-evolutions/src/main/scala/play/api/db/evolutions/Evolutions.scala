@@ -31,7 +31,7 @@ import play.utils.PlayIO
  * @param sql_up the SQL statements for UP application
  * @param sql_down the SQL statements for DOWN application
  */
-case class Evolution(revision: Int, sql_up: String = "", sql_down: String = "") {
+case class Evolution(revision: Int, sql_up: String = "", sql_down: String = "", state: String = "") {
   /**
    * Revision hash, automatically computed from the SQL content.
    */
@@ -199,7 +199,7 @@ object Evolutions {
       .zip(ups)
       .reverse
       .dropWhile {
-        case (down, up) => down.hash == up.hash
+        case (down, up) => down.hash == up.hash || down.state.equals("skip") || up.state.equals("skip")
       }
       .reverse
       .unzip

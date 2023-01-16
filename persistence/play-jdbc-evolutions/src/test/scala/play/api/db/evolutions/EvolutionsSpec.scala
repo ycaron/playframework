@@ -40,6 +40,24 @@ class EvolutionsSpec extends Specification {
       resultSet.next must beFalse
     }
 
+    trait DownScriptsWithSkipped {
+      this: WithEvolutions =>
+      val original = evolutions.scripts(Seq(a1, a2, a3))
+      evolutions.evolve(original, autocommit = true)
+
+      val scripts = evolutions.scripts(Seq(b1.copy(state = "skip"), a2.copy(state = "skip"), b3.copy(state = "skip")))
+      evolutions.evolve(scripts, autocommit = true)
+
+      (scripts must have).length(0)
+
+      val resultSet = executeQuery("select * from test")
+      resultSet.next must beTrue
+      resultSet.getLong(1) must_== 1L
+      resultSet.getString(2) must_== "alice"
+      resultSet.getInt(3) must_== 42
+      resultSet.next must beFalse
+    }
+
     trait DownScripts { this: WithEvolutions =>
       val original = evolutions.scripts(Seq(a1, a2, a3))
       evolutions.evolve(original, autocommit = true)
@@ -47,7 +65,7 @@ class EvolutionsSpec extends Specification {
       val scripts = evolutions.scripts(Seq(b1, a2, b3))
 
       (scripts must have).length(6)
-      scripts must_== Seq(DownScript(a3), DownScript(a2), DownScript(a1), UpScript(b1), UpScript(a2), UpScript(b3))
+      scripts must_== Seq(DownScript(a3.copy(state = "applied")), DownScript(a2.copy(state = "applied")), DownScript(a1.copy(state = "applied")), UpScript(b1), UpScript(a2), UpScript(b3))
 
       evolutions.evolve(scripts, autocommit = true)
 
@@ -112,6 +130,8 @@ class EvolutionsSpec extends Specification {
 
     "apply down scripts" in new DownScripts with WithEvolutions
     "apply down scripts derby" in new DownScripts with WithDerbyEvolutions
+
+    "apply down scripts with skip state" in new DownScriptsWithSkipped with WithEvolutions
 
     "report inconsistent state and resolve" in new ReportInconsistentStateAndResolve with WithEvolutions
     "report inconsistent state and resolve derby" in new ReportInconsistentStateAndResolve with WithDerbyEvolutions

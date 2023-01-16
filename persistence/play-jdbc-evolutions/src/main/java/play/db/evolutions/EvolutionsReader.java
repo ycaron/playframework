@@ -21,7 +21,7 @@ public abstract class EvolutionsReader implements play.api.db.evolutions.Evoluti
               .map(
                   e ->
                       new play.api.db.evolutions.Evolution(
-                          e.getRevision(), e.getSqlUp(), e.getSqlDown()))
+                          e.getRevision(), e.getSqlUp(), e.getSqlDown(), e.getState()))
               .collect(toList());
       return Scala.asScala(scalaEvolutions);
     } else {

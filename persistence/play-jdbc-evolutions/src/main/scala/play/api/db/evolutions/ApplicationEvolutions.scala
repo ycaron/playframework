@@ -58,6 +58,7 @@ class ApplicationEvolutions @Inject() (
     dbApi
       .databases()
       .foreach(
+        //here yohan
         ApplicationEvolutions.runEvolutions(
           _,
           config,
@@ -81,11 +82,11 @@ class ApplicationEvolutions @Inject() (
               case Mode.Prod if hasDown && dbConfig.autoApply && dbConfig.autoApplyDowns =>
                 evolutions.evolve(db, scripts, autocommit, schema)
               case Mode.Prod if hasDown =>
+                //logger.warn(
+                //  s"Your production database [$db] needs evolutions, including downs! \n\n${toHumanReadableScript(scripts)}"
+                //)
                 logger.warn(
-                  s"Your production database [$db] needs evolutions, including downs! \n\n${toHumanReadableScript(scripts)}"
-                )
-                logger.warn(
-                  s"Run with -Dplay.evolutions.db.$db.autoApply=true and -Dplay.evolutions.db.$db.autoApplyDowns=true if you want to run them automatically, including downs (be careful, especially if your down evolutions drop existing data)"
+                  s"Yohan test: Run with -Dplay.evolutions.db.$db.autoApply=true and -Dplay.evolutions.db.$db.autoApplyDowns=true if you want to run them automatically, including downs (be careful, especially if your down evolutions drop existing data)"
                 )
 
                 invalidDatabaseRevision()
@@ -203,10 +204,25 @@ private object ApplicationEvolutions {
         val autocommit = dbConfig.autocommit
 
         val scripts   = evolutions.scripts(db, reader, schema)
+        scripts.sortBy( x => x.evolution.revision)
+          .foreach {
+            case(script: Script) => {
+              logger.info(s"Yohan evolution revision= ${script.evolution.revision} ")
+              logger.info(s"Yohan evolution hash= ${script.evolution.hash}" )
+              logger.info(s"Yohan evolution sql_up= ${script.evolution.sql_up}" )
+              logger.info(s"Yohan evolution sql_down= ${script.evolution.sql_down}" )
+              logger.info(s"Yohan evolution statements= ${script.statements}")
+              logger.info(s"Yohan evolution sql= ${script.sql}")
+              logger.info(s"Yohan evolution down=${script.isInstanceOf[DownScript]}" )
+            }
+          }
+
+
         val hasDown   = scripts.exists(_.isInstanceOf[DownScript])
         val onlyDowns = scripts.forall(_.isInstanceOf[DownScript])
 
         if (scripts.nonEmpty && !(onlyDowns && dbConfig.skipApplyDownsOnly)) {
+          //hasDown was false in play 2.6, but it's true since play 2.7
           block.apply(db, dbConfig, schema, scripts, hasDown, autocommit)
         }
       }

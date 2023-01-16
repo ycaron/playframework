@@ -9,6 +9,7 @@ public final class Evolution {
   private final int revision;
   private final String sqlUp;
   private final String sqlDown;
+  private final String state;
 
   /**
    * Create the evolution.
@@ -16,11 +17,13 @@ public final class Evolution {
    * @param revision The revision of the evolution to create.
    * @param sqlUp The SQL script for bringing the evolution up.
    * @param sqlDown The SQL script for tearing the evolution down.
+   * @param state
    */
-  public Evolution(int revision, String sqlUp, String sqlDown) {
+  public Evolution(int revision, String sqlUp, String sqlDown, String state) {
     this.revision = revision;
     this.sqlUp = sqlUp;
     this.sqlDown = sqlDown;
+    this.state = state;
   }
 
   /**
@@ -48,6 +51,10 @@ public final class Evolution {
    */
   public String getSqlDown() {
     return sqlDown;
+  }
+
+  public String getState() {
+    return state;
   }
 
   @Override

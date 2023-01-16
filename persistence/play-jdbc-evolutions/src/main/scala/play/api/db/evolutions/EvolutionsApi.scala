@@ -141,7 +141,7 @@ class DatabaseEvolutions(database: Database, schema: String = "") {
     try {
       checkEvolutionsState()
       executeQuery(
-        "select id, hash, apply_script, revert_script from ${schema}play_evolutions order by id"
+        "select id, hash, apply_script, revert_script, state from ${schema}play_evolutions order by id"
       ) { rs =>
         Collections.unfoldLeft(rs) { rs =>
           rs.next match {
@@ -150,7 +150,7 @@ class DatabaseEvolutions(database: Database, schema: String = "") {
               Some(
                 (
                   rs,
-                  Evolution(rs.getInt(1), Option(rs.getString(3)).getOrElse(""), Option(rs.getString(4)).getOrElse(""))
+                  Evolution(rs.getInt(1), Option(rs.getString(3)).getOrElse(""), Option(rs.getString(4)).getOrElse(""), Option(rs.getString(5)).getOrElse(""))
                 )
               )
             }
